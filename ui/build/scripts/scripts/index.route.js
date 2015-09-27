@@ -1,0 +1,1 @@
+!function(){"use strict";function n(n,t){n.state("home",{url:"/",templateUrl:"app/main/main.html",controller:"MainController",controllerAs:"main"}),t.otherwise("/")}angular.module("ui").config(n)}();

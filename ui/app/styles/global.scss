@@ -1,0 +1,21 @@
+body.home {
+  transition: all 0.2s ease;
+  .media-unit {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    .right {
+      border-left: 1px solid #ccc;
+      h1 {
+        font-size: 24px;
+      }
+    }
+  }
+}
+
+
+
+.color{
+
+  background-color:black;
+
+}

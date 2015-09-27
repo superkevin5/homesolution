@@ -1,0 +1,1 @@
+!function(){"use strict";describe("controllers",function(){beforeEach(module("ui")),it("should define more than 5 awesome things",inject(function(e){var t=e("MainController");expect(angular.isArray(t.awesomeThings)).toBeTruthy(),expect(t.awesomeThings.length>5).toBeTruthy()}))})}();
