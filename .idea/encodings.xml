@@ -8,8 +8,5 @@
     <file url="file://$PROJECT_DIR$/ui/app/styles/main/global.css" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ui/gulpfile.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ui/package.json" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/ui/src/app/index.constants.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/ui/src/app/main/main.controller.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/ui/src/app/styles/global.scss" charset="UTF-8" />
   </component>
 </project>
