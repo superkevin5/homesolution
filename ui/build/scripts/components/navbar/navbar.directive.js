@@ -1,1 +1,0 @@
-!function(){"use strict";function r(){function r(r){var t=this;t.relativeDate=r(t.creationDate).fromNow()}var t={restrict:"E",templateUrl:"app/components/navbar/navbar.html",scope:{creationDate:"="},controller:r,controllerAs:"vm",bindToController:!0};return t}angular.module("ui").directive("acmeNavbar",r)}();
