@@ -16,7 +16,8 @@
     "mongodb": "~2.0.33",
     "monk": "~1.0.1",
     "nodemon": "^1.5.0",
-    "cookie-session": "~2.0.0-alpha.1"
+    "cookie-session": "~2.0.0-alpha.1",
+    "util": "~0.10.3"
   },
   "devDependencies": {
     "mongoose": "^4.1.9"
