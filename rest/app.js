@@ -6,9 +6,11 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
+var mongoose = require('mongoose');
 
 var edevices = require('./routes/edevice');
 var users = require('./routes/users');
+var properties = require('./routes/property');
 
 var app = express();
 var myLogger = function (req, res, next) {
@@ -46,6 +48,34 @@ app.use(cookieSession({
       }
     })
 );
+
+var connectMogo = function() {
+  // Build the connection string
+  var dbURI = 'mongodb://localhost:27017/homesolution';
+
+// Create the database connection
+  mongoose.connect(dbURI);
+
+// CONNECTION EVENTS
+// When successfully connected
+  mongoose.connection.on('connected', function () {
+    console.log('Mongoose default connection open to ' + dbURI);
+  });
+
+// If the connection throws an error
+  mongoose.connection.on('error',function (err) {
+    console.log('Mongoose default connection error: ' + err);
+  });
+
+// When the connection is disconnected
+  mongoose.connection.on('disconnected', function () {
+    console.log('Mongoose default connection disconnected');
+  });
+
+
+};
+
+connectMogo();
 app.use(myLogger,requestTime);
 
 app.all('*', function(req, res, next){
@@ -53,8 +83,9 @@ app.all('*', function(req, res, next){
   next();
 });
 
-app.use('/edevices', edevices);
-app.use('/users', users);
+app.use('/homesolution/edevices', edevices);
+app.use('/homesolution/users', users);
+app.use('/homesolution/property', properties);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
