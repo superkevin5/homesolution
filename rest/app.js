@@ -13,6 +13,7 @@ var users = require('./routes/users');
 var properties = require('./routes/property');
 
 var app = express();
+
 var myLogger = function (req, res, next) {
   console.log('LOGGED');
   next();
@@ -71,8 +72,6 @@ var connectMogo = function() {
   mongoose.connection.on('disconnected', function () {
     console.log('Mongoose default connection disconnected');
   });
-
-
 };
 
 connectMogo();
@@ -94,7 +93,6 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// error handlers
 
 // development error handler
 // will print stacktrace
@@ -107,7 +105,6 @@ if (app.get('env') === 'development') {
     });
   });
 }
-
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {

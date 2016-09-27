@@ -1,74 +1,104 @@
 var express = require('express');
 var router = express.Router();
+var util = require('util');
 var Property = require('../model/property');
 
-
-router.use(function(req, res, next) {
-  console.log('I am contacting property',req.method, req.url);
-  next();
+router.use(function (req, res, next) {
+    console.log('I am contacting property', req.method, req.url);
+    next();
 });
 
-
-///* GET home page. */
-//router.get('/', function(req, res, next) {
-//  //res.render('edevice', { title: 'Express' });
-//  var edevicerepairers = [];
 //
-//
-//
-//  for(var i=0;i<10;i++) {
-//    edevicerepairers.push(new edevice({'name': 'a'+i, 'address': 'ssssssssss'}));
-//  }
-//
-//
-//  //res.json(400, {
-//  //  error: 1,
-//  //  msg: "some error"
-//  //});
-//
-//  res.json(edevicerepairers);
-//
-//  //res.send(h.toJSON());
-//});
+//this.propertyId = propertyId,
+//    this.DetailUrl = DetailUrl,
+//    this.streetAddress = streetAddress,
+//    this.addressLocation = addressLocation,
+//    this.addressionRegion = addressionRegion,
+//    this.postalCode = postalCode,
+//    this.pageVisit = pageVisit,
+//    this.isNew = isNew;
 
 
+router.post('/save', function (req, res) {
+    var propertyId = '', DetailUrl = '', streetAddress = '', addressLocation = '', addressionRegion = '', postalCode = '', pageVisit = 0, newProperty = false;
+    if (req.body.propertyId) {
+        propertyId = req.body.propertyId;
+    }
+    if (req.body.DetailUrl) {
+        DetailUrl = req.body.DetailUrl;
+    }
+    if (req.body.streetAddress) {
+        streetAddress = req.body.streetAddress;
+    }
+    if (req.body.addressLocation) {
+        addressLocation = req.body.addressLocation;
+    }
+    if (req.body.addressionRegion) {
+        addressionRegion = req.body.addressionRegion;
+    }
+    if (req.body.postalCode) {
+        postalCode = req.body.postalCode;
+    }
+    if (req.body.pageVisit) {
+        pageVisit = req.body.pageVisit;
+    }
 
-//var propertySchema = new Schema({
-//  propertyId: { type: String, default: '' },
-//  DetailUrl: { type: String, default: '' },
-//  streetAddress: { type: String, default: '' },
-//  addressLocation: { type: String, default: '' },
-//  addressionRegion: { type: String, default: '' },
-//  postalCode: { type: String, default: '' },
-//  pageVisit: { type: Number, default: '' }
-//});
+    if (req.body.newProperty) {
+        newProperty = req.body.newProperty;
+    }
 
-router.post('/save', function(req, res) {
 
-  var property = Property({
-    propertyId: '1',
-    DetailUrl: '2',
-    streetAddress: '3',
-    addressLocation: '3',
-    addressionRegion:'5',
-    postalCode:'1',
-    pageVisit:11
-  });
+    Property.find({propertyId: req.body.propertyId}, function (err, existingProperty) {
+        if (err) throw err;
 
-  property.save(function(err) {
-    if (err) throw err;
+        if (existingProperty.length === 0) {
 
-    console.log('User created!');
-  });
+            var propertyToSave = Property({
+                propertyId: new String(propertyId),
+                DetailUrl: new String(DetailUrl),
+                streetAddress: new String(streetAddress),
+                addressLocation: new String(addressLocation),
+                addressionRegion: new String(addressionRegion),
+                postalCode: new String(postalCode),
+                pageVisit: parseInt(new String(pageVisit)),
+                newProperty: new Boolean(newProperty)
+            });
 
-  var user_id = req.body.id;
-  console.log(req.body.id);
-  var token = req.body.token;
-  var geo = req.body.geo;
+            console.log(util.inspect(propertyToSave));
 
-  res.send(user_id + ' ' + token + ' ' + geo);
+            propertyToSave.save(function (err) {
+                if (err) {
+                    console.log(err);
+                    throw err
+                };
+                console.log('Property ' + propertyToSave.propertyId + ' created!');
+            });
+
+        } else if(existingProperty.length === 1) {
+            existingProperty[0].propertyId = req.body.propertyId;
+            existingProperty[0].DetailUrl = req.body.DetailUrl;
+            existingProperty[0].streetAddress = req.body.streetAddress;
+            existingProperty[0].addressLocation = req.body.addressLocation;
+            existingProperty[0].addressionRegion = req.body.addressionRegion;
+            existingProperty[0].postalCode = req.body.postalCode;
+            existingProperty[0].pageVisit = req.body.pageVisit;
+            existingProperty[0].new = req.body.isNew;
+
+            existingProperty[0].save(function (err) {
+                if (err) throw err;
+
+                console.log('Property ' + existingProperty.propertyId + ' successfully updated!');
+            });
+
+
+        } else {
+            throw new Error("More than one property with id " + req.body.propertyId);
+        }
+    });
+
+
+    res.send({});
 });
-
 
 
 module.exports = router;

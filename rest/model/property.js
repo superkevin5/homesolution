@@ -24,7 +24,8 @@ var propertySchema = new Schema({
   addressLocation: { type: String, default: '' },
   addressionRegion: { type: String, default: '' },
   postalCode: { type: String, default: '' },
-  pageVisit: { type: Number, default: '' }
+  pageVisit: { type: Number, default: 0 },
+  newProperty: { type: Boolean, default: false }
 });
 
 
