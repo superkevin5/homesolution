@@ -48,6 +48,8 @@ router.post('/save', function (req, res) {
     }
 
 
+
+
     Property.find({propertyId: req.body.propertyId}, function (err, existingProperty) {
         if (err) throw err;
 
@@ -87,7 +89,7 @@ router.post('/save', function (req, res) {
             existingProperty[0].save(function (err) {
                 if (err) throw err;
 
-                console.log('Property ' + existingProperty.propertyId + ' successfully updated!');
+                console.log('Property ' + existingProperty[0].propertyId + ' successfully updated!');
             });
 
 
