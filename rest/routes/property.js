@@ -19,6 +19,25 @@ router.use(function (req, res, next) {
 //    this.isNew = isNew;
 
 
+router.get('/:propertyId', function(req, res) {
+    var pId = req.params.propertyId;
+
+    Property.find({propertyId: pId}, function (err, existingProperty) {
+        if (err) throw err;
+
+
+        if(!existingProperty || existingProperty.length===0) {
+            res.statusCode = 400;
+            res.send({ error: 'not found' });
+        } else {
+            res.statusCode = 200;
+            res.json(existingProperty);
+        }
+
+    });
+});
+
+
 router.post('/save', function (req, res) {
     var propertyId = '', DetailUrl = '', streetAddress = '', addressLocation = '', addressionRegion = '', postalCode = '', pageVisit = 0, newProperty = false;
     if (req.body.propertyId) {
@@ -63,10 +82,11 @@ router.post('/save', function (req, res) {
                 addressionRegion: new String(addressionRegion),
                 postalCode: new String(postalCode),
                 pageVisit: parseInt(new String(pageVisit)),
-                newProperty: new Boolean(newProperty)
+                newProperty: new Boolean(newProperty),
+                lastUpdate : new Date()
             });
 
-            console.log(util.inspect(propertyToSave));
+            //console.log(util.inspect(propertyToSave));
 
             propertyToSave.save(function (err) {
                 if (err) {
@@ -85,6 +105,7 @@ router.post('/save', function (req, res) {
             existingProperty[0].postalCode = req.body.postalCode;
             existingProperty[0].pageVisit = req.body.pageVisit;
             existingProperty[0].new = req.body.isNew;
+            existingProperty[0].lastUpdate = new Date();
 
             existingProperty[0].save(function (err) {
                 if (err) throw err;

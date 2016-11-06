@@ -3,7 +3,7 @@ var propertyMap = {};
 var currentPage = 0;
 var localServer_address = 'http://localhost:9001/homesolution/';
 var util = require('util');
-
+var TIME_DIFFERENCE = 10*24*60*60*1000;
 var Property = (function () {
     function Property(propertyId, DetailUrl, streetAddress, addressLocation, addressionRegion, postalCode, pageVisit, isNew) {
         this.propertyId = propertyId,
@@ -50,15 +50,9 @@ function goToPage(currentPage) {
 function init() {
     return require('casper').create({
         verbose: false,
-        logLevel: "debug",
-        pageSettings: {
-            loadImages: false,
-            webSecurityEnabled: false,
-// The WebPage instance used by Casper will
-            loadPlugins: false
-        }
-    }).userAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X)');
-
+        logLevel: "debug"
+    }).userAgent('Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)');
+    return require('casper').create();
 };
 
 
@@ -71,12 +65,12 @@ function saveIntoDB(pId) {
         headers: {
             'Content-type': 'application/x-www-form-urlencoded'
         }
-    }).then(function(success){
-        delete propertyMap[pId];
-    },
-    function(error){
+    }).then(function (success) {
+            delete propertyMap[pId];
+        },
+        function (error) {
 
-    });
+        });
 }
 
 function run() {
@@ -96,70 +90,66 @@ function run() {
     //printLinks(propertyDetailsLinks, IDlinks);
     //queryPropertyDetail(propertyDetailsLinks);
     //clearPropertyDetailsLinks(propertyDetailsLinks);
-    closePage();
     goToPage(++currentPage).then(function (data) {
         run();
     });
 };
 
+
 function queryPropertyDetail(propertyDetailsLinks) {
-    var i = -1;
-
-    console.log(propertyDetailsLinks.length + '----');
-    propertyDetailsLinks.forEach(function(element,index){
-
-
-        (function(ele){
-
-
+    console.log('Total ' + propertyDetailsLinks.length + ' in this area');
+    propertyDetailsLinks.forEach(function (element, index) {
+        (function (ele) {
             var pId = ele.trim().replace(/\?.*/g, '').match(/\d+$/g);
-            casper.thenOpen('http://www.realestate.com.au' + ele).then(function () {
-                casper.echo('The ' + index + ' property ' + this.getCurrentUrl(), 'INFO');
-                var detailUrl = ele;
-                var streetAddress = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="streetAddress"]');
-                var addressLocality = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="addressLocality"]');
-                var addressRegion = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="addressRegion"]');
-                var postalCode = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="postalCode"]');
-                var newIcon = this.evaluate(function (selector) {
-                    return document.querySelector(selector);
-                }, '.newIcon');
 
-                var isNew = false;
-                if (newIcon != null && newIcon != undefined) {
-                    isNew = true;
-                }
-                var p = new Property(pId, detailUrl, streetAddress, addressLocality, addressRegion, postalCode, 0, isNew);
-                propertyMap[pId] = p;
-            }).then(function(){
-                closePage ();
-            }).thenOpen('http://www.realestate.com.au/pdpvisits.ds?id=' + pId).then(function () {
-                var pageVisitsCount = this.evaluate(getInnerHtmlBySelector, '.page-visits-count');
-                propertyMap[pId].pageVisit = pageVisitsCount;
-                //console.log(util.inspect(propertyMap[pId]));
-                //saveIntoDB(pId);
-                casper.echo('property ' + pId + ' stored into map', 'INFO');
-            }).then(function(){
-                    closePage ();
-            });
+            var data, wsurl = localServer_address + 'property/' + pId;
+            data = casper.evaluate(function (wsurl) {
+                return JSON.parse(__utils__.sendAJAX(wsurl, 'GET', null, false));
+            }, {wsurl: wsurl});
+            var currentDate = new Date();
+            console.log(data.error);
+            console.log(util.inspect(data));
+            if (data.error == 'not found') {
+                casper.thenOpen('http://www.realestate.com.au' + ele).then(function () {
+                    casper.echo('The ' + index + ' property ' + this.getCurrentUrl(), 'INFO');
+                    var detailUrl = ele;
+                    var streetAddress = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="streetAddress"]');
+                    var addressLocality = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="addressLocality"]');
+                    var addressRegion = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="addressRegion"]');
+                    var postalCode = this.evaluate(getInnerHtmlBySelector, 'span[itemprop="postalCode"]');
+                    var newIcon = this.evaluate(function (selector) {
+                        return document.querySelector(selector);
+                    }, '.newIcon');
+
+                    var isNew = false;
+                    if (newIcon != null && newIcon != undefined) {
+                        isNew = true;
+                    }
+                    var p = new Property(pId, detailUrl, streetAddress, addressLocality, addressRegion, postalCode, 0, isNew);
+                    propertyMap[pId] = p;
+                }).then(function () {
+                    casper.page.close();
+                    casper.newPage();
+                }).thenOpen('http://www.realestate.com.au/pdpvisits.ds?id=' + pId).then(function () {
+                    var pageVisitsCount = this.evaluate(getInnerHtmlBySelector, '.page-visits-count');
+                    propertyMap[pId].pageVisit = pageVisitsCount;
+                    //console.log(util.inspect(propertyMap[pId]));
+                    saveIntoDB(pId);
+                    casper.echo('property ' + pId + ' stored into map', 'INFO');
+                })
+            } else {
+
+            }
         })(element);
-        });
-    };
-
-function closePage () {
-    casper.page.close();
-    casper.newPage();
-    casper.wait(4000, function() {
     });
-    console.log('close page');
-}
-var casper = init();
+};
 
+var casper = init();
 
 casper.start('https://www.realestate.com.au/buy', function () {
     casper.echo('Page title is: ' + this.evaluate(function () {
             return document.title;
         }), 'INFO');
-    //closePage();
 }).thenEvaluate(function (term) {
     document.getElementById("where").value = '2017';
     document.getElementById("rui-property-type-select-id").value = "unit apartment";
@@ -172,7 +162,6 @@ casper.start('https://www.realestate.com.au/buy', function () {
     var match = currentUrl.match(/.*list-(\d+).*/);
     currentPage = match[1];
     //currentPage = 1000;
-    //closePage();
 });
 
 
@@ -197,9 +186,9 @@ casper.then(function () {
 //    this.echo('remote message caught: ' + msg);
 //});
 
-casper.on('url.changed', function (url) {
-    casper.echo('url change');
-});
+//casper.on('url.changed', function (url) {
+//    casper.echo('url change');
+//});
 
 casper.run(function () {
     this.echo('Done.').exit();
